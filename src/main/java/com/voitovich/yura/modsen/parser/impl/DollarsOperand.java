@@ -11,7 +11,7 @@ public class DollarsOperand extends MoneyOperand {
     private final Pattern pattern = Pattern.compile(regex);
     @Override
     public String toString() {
-        return "$" + String.format("%.2f", val);
+        return "$" + String.format("%.2f", getVal());
     }
 
     public DollarsOperand() {
@@ -19,7 +19,7 @@ public class DollarsOperand extends MoneyOperand {
     }
 
     public DollarsOperand(double val) {
-        this.val = val;
+        super(val);
     }
 
     @Override

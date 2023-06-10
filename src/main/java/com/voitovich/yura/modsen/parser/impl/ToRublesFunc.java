@@ -36,6 +36,6 @@ public class ToRublesFunc implements UnaryFunction {
         } catch (ClassCastException e) {
             throw new RublesFunctionException("Unable to convert rubles to rubles");
         }
-        return new RublesOperand(dollarsOperand.val * 65.0);
+        return new RublesOperand(dollarsOperand.getVal() * 65.0);
     }
 }

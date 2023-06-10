@@ -21,8 +21,8 @@ public class AdditionOperator implements BinaryOperator {
 
     @Override
     public Operand calculate(Operand firstOperand, Operand secondOperand) {
-        double firstVal = ((MoneyOperand) firstOperand).val;
-        double secondVal = ((MoneyOperand) secondOperand).val;
+        double firstVal = ((MoneyOperand) firstOperand).getVal();
+        double secondVal = ((MoneyOperand) secondOperand).getVal();
         if (firstOperand.getClass() != secondOperand.getClass()) {
             throw new MoneyOperationException(String
                     .format("It is not possible to add values in different currencies (%s + %s). Use Conversion Helper Functions)",

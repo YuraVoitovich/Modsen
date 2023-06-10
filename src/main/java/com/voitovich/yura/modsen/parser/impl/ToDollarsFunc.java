@@ -23,7 +23,7 @@ public class ToDollarsFunc implements UnaryFunction {
         } catch (ClassCastException e) {
             throw new DollarsFunctionException("Unable to convert dollars to dollars");
         }
-        return new DollarsOperand(rublesOperand.val / 65.0);
+        return new DollarsOperand(rublesOperand.getVal() / 65.0);
     }
 
     @Override

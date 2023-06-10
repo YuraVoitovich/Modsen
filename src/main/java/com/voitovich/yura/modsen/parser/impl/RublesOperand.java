@@ -11,11 +11,11 @@ public class RublesOperand extends MoneyOperand {
     private final Pattern pattern = Pattern.compile(regex);
     @Override
     public String toString() {
-        return String.format("%.2f", val) + "р";
+        return String.format("%.2f", getVal()) + "р";
     }
 
     public RublesOperand(double val) {
-        this.val = val;
+        super(val);
     }
 
     public RublesOperand() {
