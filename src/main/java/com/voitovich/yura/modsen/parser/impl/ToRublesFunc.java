@@ -11,14 +11,18 @@ import java.util.Optional;
 public class ToRublesFunc implements UnaryFunction {
     private final String regex = "toRubles(";
 
+    private final double exchangeRate;
     public ToRublesFunc() {
-
+        this.exchangeRate = 0.0;
+    }
+    public ToRublesFunc(double exchangeRate) {
+        this.exchangeRate = exchangeRate;
     }
 
     @Override
     public Optional<Lexeme> parse(String stringToParse) {
         if (stringToParse.startsWith(regex)) {
-            return Optional.of(new ToRublesFunc());
+            return Optional.of(this);
         }
         return Optional.empty();
     }
@@ -36,6 +40,6 @@ public class ToRublesFunc implements UnaryFunction {
         } catch (ClassCastException e) {
             throw new RublesFunctionException("Unable to convert rubles to rubles");
         }
-        return new RublesOperand(dollarsOperand.getVal() * 65.0);
+        return new RublesOperand(dollarsOperand.getVal() * exchangeRate);
     }
 }

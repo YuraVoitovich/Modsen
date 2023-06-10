@@ -1,22 +1,24 @@
 package com.voitovich.yura.modsen.parser;
 
-import com.voitovich.yura.modsen.exception.BracketsException;
-import com.voitovich.yura.modsen.exception.WrongExpressionException;
+import com.voitovich.yura.modsen.exception.*;
 import com.voitovich.yura.modsen.parser.impl.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 public class Parser {
 
     private final List<Lexeme> lexemesTemplates;
     public Parser() {
+        double exchangeRate = loadExchangeRateFromConfig("exchange.rate");
         lexemesTemplates = new ArrayList<>();
         lexemesTemplates.add(new AdditionOperator());
         lexemesTemplates.add(new SubtractionOperator());
         lexemesTemplates.add(new RublesOperand());
         lexemesTemplates.add(new DollarsOperand());
-        lexemesTemplates.add(new ToDollarsFunc());
-        lexemesTemplates.add(new ToRublesFunc());
+        lexemesTemplates.add(new ToDollarsFunc(exchangeRate));
+        lexemesTemplates.add(new ToRublesFunc(exchangeRate));
         lexemesTemplates.add(new CloseBracket());
         lexemesTemplates.add(new OpenBracket());
     }
@@ -38,13 +40,24 @@ public class Parser {
                 .toList();
     }
 
+    private double loadExchangeRateFromConfig(String propertyName) {
+        Properties config = new Properties();
+        try {
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("config.properties");
+            config.load(inputStream);
+            return Double.parseDouble(config.getProperty(propertyName));
+        } catch (IOException | NumberFormatException e) {
+            throw new ExchangeRateLoadingException("Failed to load the exchange rate, check the correctness of the property file", e);
+        }
+    }
+
     private Lexeme parseLexeme(String str) {
         return lexemesTemplates.stream()
                 .map(lexeme -> lexeme.parse(str))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst()
-                .orElseThrow(() -> new WrongExpressionException("Please check the correctness of the expression"));
+                .orElseThrow(() -> new WrongExpressionException(String.format("Unknown symbol: %s", str)));
     }
 
     private void validateBrackets(List<Lexeme> lexemes) {
@@ -90,18 +103,30 @@ public class Parser {
 
     private Operand evaluatePostfix(List<Lexeme> postfixRepresentation) {
         Stack<Operand> operands = new Stack<>();
-        for (Lexeme lexeme : postfixRepresentation) {
-            if (lexeme.isOperand()) {
-                operands.push((Operand) lexeme);
-            } else if (lexeme instanceof OpenBracket) {
-                continue;
-            } else if (lexeme instanceof BinaryOperator) {
-                Operand operand = ((BinaryOperator) lexeme).calculate(operands.pop(), operands.pop());
-                operands.push(operand);
-            } else if (lexeme instanceof UnaryOperator) {
-                Operand operand = ((UnaryOperator) lexeme).calculate(operands.pop());
-                operands.push(operand);
+        try {
+            for (Lexeme lexeme : postfixRepresentation) {
+                if (lexeme.isOperand()) {
+                    operands.push((Operand) lexeme);
+                } else if (lexeme instanceof OpenBracket) {
+                    continue;
+                } else if (lexeme instanceof BinaryOperator) {
+                    try {
+                        Operand operand = ((BinaryOperator) lexeme).calculate(operands.pop(), operands.pop());
+                        operands.push(operand);
+                    } catch (EmptyStackException e) {
+                        throw new BinaryOperatorException("Wrong expression. A binary operator must take two arguments.");
+                    }
+                } else if (lexeme instanceof UnaryOperator) {
+                    try {
+                        Operand operand = ((UnaryOperator) lexeme).calculate(operands.pop());
+                        operands.push(operand);
+                    } catch(EmptyStackException e) {
+                        throw new UnaryOperationException("Wrong expression. A unary operator must take one argument.");
+                    }
+                }
             }
+        } catch (EmptyStackException e) {
+            throw new WrongExpressionException("Wrong expression. Make sure you use the correct operators");
         }
         return operands.pop();
     }

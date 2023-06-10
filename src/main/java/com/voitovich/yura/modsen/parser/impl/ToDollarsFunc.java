@@ -10,9 +10,12 @@ import java.util.Optional;
 
 public class ToDollarsFunc implements UnaryFunction {
     private final String regex = "toDollars(";
-
+    private final double exchangeRate;
     public ToDollarsFunc() {
-
+        this.exchangeRate = 0.0;
+    }
+    public ToDollarsFunc(double exchangeRate) {
+        this.exchangeRate = exchangeRate;
     }
 
     @Override
@@ -23,14 +26,14 @@ public class ToDollarsFunc implements UnaryFunction {
         } catch (ClassCastException e) {
             throw new DollarsFunctionException("Unable to convert dollars to dollars");
         }
-        return new DollarsOperand(rublesOperand.getVal() / 65.0);
+        return new DollarsOperand(rublesOperand.getVal() / exchangeRate);
     }
 
     @Override
     public Optional<Lexeme> parse(String stringToParse) {
         if (stringToParse.startsWith(regex)) {
 
-            return Optional.of(new ToDollarsFunc());
+            return Optional.of(this);
         }
         return Optional.empty();
     }
