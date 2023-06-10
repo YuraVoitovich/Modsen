@@ -1,31 +1,34 @@
 package com.voitovich.yura.modsen.parser.impl;
 
 import com.voitovich.yura.modsen.parser.Lexeme;
-import com.voitovich.yura.modsen.parser.Operand;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RublesOperand extends MoneyOperand {
-
-    private final String regex = "";
+    private final String regex = "\\d{1,3}(?:,\\d{3})*(?:\\.\\d{2})?р";
+    private final Pattern pattern = Pattern.compile(regex);
     @Override
     public String toString() {
-        return value.toString() + "р";
+        return String.format("%.2f", val) + "р";
+    }
+
+    public RublesOperand(double val) {
+        this.val = val;
     }
 
     public RublesOperand() {
-        super();
-        pattern = Pattern.compile(regex);
-    }
 
+    }
     @Override
-    protected MoneyOperand create(Number val) {
-        RublesOperand rublesOperand = new RublesOperand();
-        rublesOperand.value = val;
-        return rublesOperand;
+    public Optional<Lexeme> parse(String stringToParse) {
+        Matcher matcher = pattern.matcher(stringToParse);
+        if (matcher.matches()) {
+            double value = Double.parseDouble(stringToParse.substring(0, stringToParse.length() - 1));
+            return Optional.of(new RublesOperand(value));
+        } else {
+            return Optional.empty();
+        }
     }
-
-
 }

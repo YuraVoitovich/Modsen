@@ -1,22 +1,37 @@
 package com.voitovich.yura.modsen.parser.impl;
 
-import com.voitovich.yura.modsen.parser.BinaryOperator;
-import com.voitovich.yura.modsen.parser.Lexeme;
-import com.voitovich.yura.modsen.parser.Operand;
-import com.voitovich.yura.modsen.parser.Operator;
+import com.voitovich.yura.modsen.exception.MoneyOperationException;
+import com.voitovich.yura.modsen.parser.*;
 
 import java.util.Optional;
 
 public class AdditionOperator implements BinaryOperator {
 
     private final String operator = "+";
+
     @Override
-    public Optional<Lexeme> parse(String stringToParse) {
-        return operator.equals(stringToParse) ? Optional.of(this) : Optional.empty();
+    public Priority getPriority() {
+        return Priority.FOURTH;
     }
 
     @Override
-    public Operand calculate(Operand firstOperand, Operand SecondOperand) {
-        return null;
+    public Optional<Lexeme> parse(String stringToParse) {
+        return operator.equals(stringToParse.trim()) ? Optional.of(this) : Optional.empty();
+    }
+
+    @Override
+    public Operand calculate(Operand firstOperand, Operand secondOperand) {
+        double firstVal = ((MoneyOperand) firstOperand).val;
+        double secondVal = ((MoneyOperand) secondOperand).val;
+        if (firstOperand.getClass() != secondOperand.getClass()) {
+            throw new MoneyOperationException(String
+                    .format("It is not possible to add values in different currencies (%s + %s). Use Conversion Helper Functions)",
+                            firstOperand, secondOperand));
+        }
+        if (firstOperand.getClass() == DollarsOperand.class) {
+            return new DollarsOperand(firstVal + secondVal);
+        } else {
+            return new RublesOperand(firstVal + secondVal);
+        }
     }
 }

@@ -1,43 +1,41 @@
 package com.voitovich.yura.modsen.parser.impl;
 
-import com.voitovich.yura.modsen.parser.BinaryFunction;
-import com.voitovich.yura.modsen.parser.Function;
+import com.voitovich.yura.modsen.exception.RublesFunctionException;
 import com.voitovich.yura.modsen.parser.Lexeme;
 import com.voitovich.yura.modsen.parser.Operand;
+import com.voitovich.yura.modsen.parser.Priority;
+import com.voitovich.yura.modsen.parser.UnaryFunction;
 
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class ToRublesFunc implements BinaryFunction {
-    private final String regex = "";
-    private final Pattern pattern = Pattern.compile(regex);
-    private final String paramsRegex = "";
+public class ToRublesFunc implements UnaryFunction {
+    private final String regex = "toRubles(";
 
-    private final Pattern paramsPattern = Pattern.compile(paramsRegex);
+    public ToRublesFunc() {
 
-    private String parameters;
-
-    public ToRublesFunc(String parameters) {
-        this.parameters = parameters;
     }
 
     @Override
     public Optional<Lexeme> parse(String stringToParse) {
-        Matcher matcher = pattern.matcher(stringToParse);
-        String params = "";
-        if (matcher.matches()) {
-            Matcher paramsMatcher = paramsPattern.matcher(stringToParse);
-            if (paramsMatcher.find()) {
-                parameters = paramsMatcher.group();
-            }
-            return Optional.of(new ToRublesFunc(params));
+        if (stringToParse.startsWith(regex)) {
+            return Optional.of(new ToRublesFunc());
         }
         return Optional.empty();
     }
 
     @Override
-    public Operand calculate(Operand firstOperand, Operand SecondOperand) {
-        return null;
+    public Priority getPriority() {
+        return Priority.LOWEST;
+    }
+
+    @Override
+    public Operand calculate(Operand operand) {
+        DollarsOperand dollarsOperand = null;
+        try {
+            dollarsOperand = (DollarsOperand) operand;
+        } catch (ClassCastException e) {
+            throw new RublesFunctionException("Unable to convert rubles to rubles");
+        }
+        return new RublesOperand(dollarsOperand.val * 65.0);
     }
 }

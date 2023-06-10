@@ -1,43 +1,43 @@
 package com.voitovich.yura.modsen.parser.impl;
 
-import com.voitovich.yura.modsen.parser.BinaryFunction;
-import com.voitovich.yura.modsen.parser.Function;
+import com.voitovich.yura.modsen.exception.DollarsFunctionException;
 import com.voitovich.yura.modsen.parser.Lexeme;
 import com.voitovich.yura.modsen.parser.Operand;
+import com.voitovich.yura.modsen.parser.Priority;
+import com.voitovich.yura.modsen.parser.UnaryFunction;
 
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class ToDollarsFunc implements BinaryFunction {
-    private final String regex = "";
-    private final Pattern pattern = Pattern.compile(regex);
-    private final String paramsRegex = "";
+public class ToDollarsFunc implements UnaryFunction {
+    private final String regex = "toDollars(";
 
-    private final Pattern paramsPattern = Pattern.compile(paramsRegex);
+    public ToDollarsFunc() {
 
-    private String parameters;
+    }
 
-    public ToDollarsFunc(String parameters) {
-        this.parameters = parameters;
+    @Override
+    public Operand calculate(Operand operand) {
+        RublesOperand rublesOperand;
+        try {
+            rublesOperand = (RublesOperand) operand;
+        } catch (ClassCastException e) {
+            throw new DollarsFunctionException("Unable to convert dollars to dollars");
+        }
+        return new DollarsOperand(rublesOperand.val / 65.0);
     }
 
     @Override
     public Optional<Lexeme> parse(String stringToParse) {
-        Matcher matcher = pattern.matcher(stringToParse);
-        String params = "";
-        if (matcher.matches()) {
-            Matcher paramsMatcher = paramsPattern.matcher(stringToParse);
-            if (paramsMatcher.find()) {
-                parameters = paramsMatcher.group();
-            }
-            return Optional.of(new ToDollarsFunc(params));
+        if (stringToParse.startsWith(regex)) {
+
+            return Optional.of(new ToDollarsFunc());
         }
         return Optional.empty();
     }
 
+
     @Override
-    public Operand calculate(Operand firstOperand, Operand SecondOperand) {
-        return null;
+    public Priority getPriority() {
+        return Priority.LOWEST;
     }
 }
