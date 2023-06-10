@@ -6,7 +6,7 @@ import com.voitovich.yura.modsen.parser.Parser;
 public class Main {
     public static void main(String[] args) {
         Parser parser = new Parser();
-        Operand operand = parser.parse("toRubles(($3 + $2) + toDollars(737р + toRubles($85.4 + $2) + 65р))");
+        Operand operand = parser.parse("toRubles(($3 + $2) + toDollars(737.64р + toRubles($85.4 + $2) + 65р))");
         System.out.println(operand);
     }
 }
